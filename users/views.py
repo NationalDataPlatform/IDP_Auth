@@ -499,6 +499,10 @@ def get_users(request):
                 continue
             user_roles_res = []
             for role in user_roles:
+                provider_count = UserRole.objects.filter(org_id=role["org_id"], role__role_name="DP").count()
+                # print(role["org_title"], provider_count)
+                dataset_obj = DatasetOwner.objects.filter(username__username=user["username"]).values_list("id", flat=True).order_by("id")
+                dataset_list = [id for id in dataset_obj]
                 user_roles_res.append(
                     {
                         "org_id": role["org_id"],
@@ -506,6 +510,8 @@ def get_users(request):
                         "role": role["role__role_name"],
                         "status": role["org_status"],
                         "updated": role["updated"],
+                        "dp_count": provider_count,
+                        "dataset_list": dataset_list
                     }
                 )
             users_list.append(
