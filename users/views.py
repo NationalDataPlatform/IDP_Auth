@@ -14,6 +14,7 @@ from .models import *
 import os
 from users.utils import utils
 from django_ratelimit.decorators import ratelimit
+from django.db.models import Count
 
 config = ConfigParser()
 config.read("config.ini")
@@ -482,12 +483,13 @@ def get_users(request):
 
     if ispmu and org_id == "":
         users = CustomUser.objects.exclude(username=username).values(
-            "username", "email", "first_name"
+            "username", "email", "first_name", "date_joined"
         )
         if user_type == ["All"]:
             users_list = []
             for user in users:
-                users_list.append({"username": user['username'], "email":user["email"], "first_name":user["first_name"]})
+                dataset_access_count = len(Datasetrequest.objects.filter(username__username=user['username']).values('dataset_id').annotate(dcount=Count('dataset_id')))
+                users_list.append({"username": user['username'], "email":user["email"], "first_name":user["first_name"], "date_joined": user["date_joined"], "dataset_access_count": dataset_access_count})
             context = {"Success": True, "users": users_list}
             return JsonResponse(context, safe=False)
         users_list = []
