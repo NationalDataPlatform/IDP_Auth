@@ -501,7 +501,7 @@ def get_users(request):
             for role in user_roles:
                 provider_count = UserRole.objects.filter(org_id=role["org_id"], role__role_name="DP").count()
                 # print(role["org_title"], provider_count)
-                dataset_obj = DatasetOwner.objects.filter(username__username=user["username"]).values_list("id", flat=True).order_by("id")
+                dataset_obj = DatasetOwner.objects.filter(username__username=user["username"]).values_list("dataset_id", flat=True).order_by("dataset_id")
                 dataset_list = [id for id in dataset_obj]
                 user_roles_res.append(
                     {
