@@ -1023,25 +1023,33 @@ def get_user_info(request):
 
     try:
         users = CustomUser.objects.filter(username=user_name).values(
-            "username", "email", "first_name", "last_name", "user_type", "phn", "dpa_org", "dpa_email", "dpa_phone", "dpa_desg", "dp_org", "dp_email", "dp_phone", "dp_desg"
+            "username", "email", "first_name", "last_name", "user_type", "phn" 
         )
-
+        
+        user = users[0]
+        
+        user_roles = UserRole.objects.filter(username__username=user["username"]).values("org_id", "org_title", "role__role_name", "org_status", "updated")
+        user_roles_res = {"DP": [], "DPA": [], "PMU": [], "CR": []}
+        
+        for role in user_roles:
+            user_roles_res[role["role__role_name"]].append(
+                {
+                    "org_id": role["org_id"],
+                    "org_title": role["org_title"],
+                    "role": role["role__role_name"],
+                    "status": role["org_status"],
+                    "updated": role["updated"],
+                }
+            )
         context = {
             "Success": True,
             "username": user_name,
-            "email": users[0]["email"],
-            "first_name": users[0]["first_name"],
-            "last_name": users[0]["last_name"],                        
-            "user_type": users[0]["user_type"],
-            "phn": users[0]["phn"],
-            "dpa_org": users[0]["dpa_org"],
-            "dpa_email": users[0]["dpa_email"],
-            "dpa_phone": users[0]["dpa_phone"],
-            "dpa_desg": users[0]["dpa_desg"],
-            "dp_org": users[0]["dp_org"],
-            "dp_email": users[0]["dp_email"],
-            "dp_phone": users[0]["dp_phone"],
-            "dp_desg": users[0]["dp_desg"],
+            "email": user["email"],
+            "first_name": user["first_name"],
+            "last_name": user["last_name"],                        
+            "user_type": user["user_type"],
+            "phn": user["phn"],
+            "access": user_roles_res,
         }
         return JsonResponse(context, safe=False)
 
