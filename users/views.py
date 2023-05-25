@@ -483,7 +483,7 @@ def get_users(request):
 
     if ispmu and org_id == "":
         users = CustomUser.objects.exclude(username=username).values(
-            "username", "email", "first_name", "date_joined"
+            "username", "email", "first_name", "date_joined", "last_name"
         )
         if user_type == ["All"]:
             users_list = []
@@ -491,7 +491,7 @@ def get_users(request):
                 dataset_access_count = len(Datasetrequest.objects.filter(username__username=user['username']).values('dataset_id').annotate(dcount=Count('dataset_id')))
                 dataset_obj = Datasetrequest.objects.filter(username__username=user["username"]).values_list("dataset_id", flat=True).order_by("dataset_id")
                 dataset_list = list(set([id for id in dataset_obj]))
-                users_list.append({"username": user['username'], "email":user["email"], "first_name":user["first_name"], "date_joined": user["date_joined"], "dataset_access_count": dataset_access_count, "dataset_list": dataset_list})
+                users_list.append({"username": user['username'], "email":user["email"], "name":user["first_name"] + " " + user["last_name"], "date_joined": user["date_joined"], "dataset_access_count": dataset_access_count, "dataset_list": dataset_list})
             context = {"Success": True, "users": users_list}
             return JsonResponse(context, safe=False)
         users_list = []
@@ -522,6 +522,7 @@ def get_users(request):
                 {
                     "username": user["username"],
                     "email": user["email"],
+                    "name": user["first_name"] + " " + user["last_name"],
                     "access": user_roles_res,
                 }
             )
