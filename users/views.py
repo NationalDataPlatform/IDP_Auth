@@ -15,6 +15,7 @@ import os
 from users.utils import utils
 from django_ratelimit.decorators import ratelimit
 from django.db.models import Count
+from keycloak import KeycloakAdmin
 
 config = ConfigParser()
 config.read("config.ini")
@@ -32,6 +33,13 @@ keycloak_openid = KeycloakOpenID(
     ),
 )
 config_well_known = keycloak_openid.well_known()
+
+# configure keycloak admin client
+keycloak_admin = KeycloakAdmin(
+                        server_url=os.environ.get("KEYCLOAK_URL", config.get("keycloak", "server_url")),
+                        username=os.environ.get("KEYCLOAK_ADMIN", config.get("keycloak", "admin")),
+                        password=os.environ.get("KEYCLOAK_ADMINPASS", config.get("keycloak", "adminpass")),
+                        verify=False)
 
 
 # graphql config
@@ -233,9 +241,9 @@ def check_user(request):
             return JsonResponse(context, safe=False)
     else:
         UserObjs = CustomUser.objects.filter(username=username)
-        if  userinfo.get("given_name") != None:
+        if  userinfo.get("given_name") != None and UserObjs[0].first_name == None:
             UserObjs.update(first_name=userinfo.get("given_name"))
-        if  userinfo.get("family_name") != None:
+        if  userinfo.get("family_name") != None and UserObjs[0].last_name == None:
             UserObjs.update(last_name=userinfo.get("family_name"))            
                 
         user_roles = UserRole.objects.filter(username__username=username).values(
@@ -1096,7 +1104,6 @@ def update_user_info(request):
         return JsonResponse(context, safe=False)
 
     username = userinfo["preferred_username"]    
-
     
     if username != user_name:
         context = {
@@ -1108,11 +1115,23 @@ def update_user_info(request):
     
 
     try:
+        # Get user ID from username
+        keycloak_admin.realm_name=os.environ.get("KEYCLOAK_REALM_NAME", config.get("keycloak", "realm_name"))
+        user_id_keycloak = keycloak_admin.get_user_id(username)
+        print ('----id', user_id_keycloak)
+        print ('---user', user_name)
+        
         UserObjs = CustomUser.objects.filter(username=user_name)
         if  first_name != None:
             UserObjs.update(first_name=first_name)
+            # Update User
+            response = keycloak_admin.update_user(user_id=user_id_keycloak,
+                                      payload={'firstName': first_name})
         if  last_name != None:
-            UserObjs.update(last_name=last_name)                    
+            UserObjs.update(last_name=last_name)
+            # Update User
+            response = keycloak_admin.update_user(user_id=user_id_keycloak,
+                                      payload={'lastName':last_name})
         if  user_type != None:
             UserObjs.update(user_type=user_type)
         if  phn != None:
