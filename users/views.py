@@ -490,9 +490,12 @@ def get_users(request):
     userorg = userroleobj[0]["org_id"]'''
 
     if ispmu and org_id == "":
-        users = CustomUser.objects.exclude(username=username).values(
+        users = CustomUser.objects.all().values(
             "username", "email", "first_name", "date_joined", "last_name"
         )
+        # CustomUser.objects.exclude(username=username).values(
+        #     "username", "email", "first_name", "date_joined", "last_name"
+        # )
         if user_type == ["All"]:
             users_list = []
             for user in users:
