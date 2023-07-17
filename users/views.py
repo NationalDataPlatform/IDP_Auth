@@ -217,6 +217,9 @@ def check_user(request):
             print(response_json)
 
             if response_json["data"]["register"]["success"] == True:
+                createduserobj = CustomUser.objects.filter(username=username)
+                if  userinfo.get("phone_number") != None: 
+                    createduserobj.update(phn=userinfo.get("phone_number"))   
                 context = {
                     "Success": True,
                     "username": username,
@@ -241,10 +244,12 @@ def check_user(request):
             return JsonResponse(context, safe=False)
     else:
         UserObjs = CustomUser.objects.filter(username=username)
-        if  userinfo.get("given_name") != None and UserObjs[0].first_name == None:
+        if  userinfo.get("given_name") != None: #and UserObjs[0].first_name == None
             UserObjs.update(first_name=userinfo.get("given_name"))
-        if  userinfo.get("family_name") != None and UserObjs[0].last_name == None:
-            UserObjs.update(last_name=userinfo.get("family_name"))            
+        if  userinfo.get("family_name") != None: # and UserObjs[0].last_name == None
+            UserObjs.update(last_name=userinfo.get("family_name")) 
+        if  userinfo.get("phone_number") != None: # and UserObjs[0].last_name == None
+            UserObjs.update(phn=userinfo.get("phone_number"))                        
                 
         user_roles = UserRole.objects.filter(username__username=username).values(
             "org_id", "org_title", "role__role_name", "org_status"
