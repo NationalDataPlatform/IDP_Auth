@@ -1316,7 +1316,7 @@ def get_user_orgs(request):
         )
 
         userroleobj = UserRole.objects.filter(
-            username=user, role__role_name="DPA"
+            username=user, role__role_name__in=["DPA", "DP"]
         ).values("org_id", "role__role_name", "org_title")
         orgs = []
         org_details = []
