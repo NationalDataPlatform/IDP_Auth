@@ -40,6 +40,7 @@ class Role(models.Model):
         PROVIDER_ADMIN = "DPA", _("PROVIDER ADMIN")
         PROVIDER = "DP", _("PROVIDER")
         CONSUMER = "CR", _("CONSUMER")
+        SYSTEMADMIN = "SA", _("SYSTEMADMIN")
 
     role_name = models.CharField(
         max_length=50,
