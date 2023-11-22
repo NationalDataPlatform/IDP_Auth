@@ -1,0 +1,44 @@
+stages:
+  - Build
+  - Staging
+  - Sandbox
+  - Prod
+
+BUILD:
+  stage: Build
+  script:
+    - docker build -t chub.cloud.gov.in/mit6c0-ogd/idp-auth:$CI_COMMIT_SHA --build-arg https_proxy=http://10.194.150.152:3128 --build-arg http_proxy=http://10.194.150.152:3128 .
+    - docker login chub.cloud.gov.in -u $USER -p $PASSWORD
+    - docker push chub.cloud.gov.in/mit6c0-ogd/idp-auth:$CI_COMMIT_SHA
+
+STAGING:
+  stage: Staging
+  script:
+    - kubectl --kubeconfig=/home/gitlab-runner/idp-stg/kubeconfig.yml set image deployment/idp-stg-auth idp-stg-auth=chub.cloud.gov.in/mit6c0-ogd/idp-auth:$CI_COMMIT_SHA -n idp-stg
+  when: manual
+  needs:
+    - BUILD
+  environment:
+    name: Staging
+
+SANDBOX:
+  stage: Sandbox
+  script:
+    - kubectl --kubeconfig=/home/gitlab-runner/idp-prod/kubeconfig.yml set image deployment/idp-pd-auth idp-pd-auth=chub.cloud.gov.in/mit6c0-ogd/idp-auth:$CI_COMMIT_SHA -n idp-prod
+  when: manual
+  needs:
+    - BUILD
+  environment:
+    name: Sandbox
+
+PRODUCTION:
+  stage: Prod
+  script:
+    - kubectl --kubeconfig=/home/gitlab-runner/idp-gov/kubeconfig.yml set image deployment/idp-gov-auth idp-gov-auth=chub.cloud.gov.in/mit6c0-ogd/idp-auth:$CI_COMMIT_SHA -n idp-gov
+  when: manual
+  needs:
+    - BUILD
+  environment:
+    name: Production
+  only:
+    - main
