@@ -9,6 +9,6 @@ class SimpleMiddleware:
         response['X-XSS-Protection'] = "1; mode=block"
         response.headers['Server'] = "Not Available!"
         response.headers['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains; preload;"
-        response.headers['Content-Security-Policy:'] = "default-src 'none'; img-src 'self'" 
-        response.headers['Cache-Control:'] = "no-cache, no-store"        
+        response.headers['Content-Security-Policy'] = "default-src 'none'; img-src 'self'" 
+        response.headers['Cache-Control'] = "no-cache, no-store"        
         return response
