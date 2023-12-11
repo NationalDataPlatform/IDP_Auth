@@ -251,7 +251,7 @@ def check_user(request):
         if  userinfo.get("phone_number") != None: # and UserObjs[0].last_name == None
             UserObjs.update(phn=userinfo.get("phone_number"))                        
                 
-        user_roles = UserRole.objects.filter(username__username=username).values(
+        user_roles = UserRole.objects.filter(username__username=username).exclude(org_status="disabled").values(
             "org_id", "org_title", "role__role_name", "org_status"
         )
         user_roles_res = []
@@ -380,7 +380,7 @@ def modify_org_status(request):
         }
         return JsonResponse(context, safe=False)
 
-    if org_status not in ["created", "approved", "rejected"]:
+    if org_status not in ["created", "approved", "rejected", "disabled"]:
         context = {
             "Success": False,
             "error": "wrong status",
@@ -1171,6 +1171,7 @@ def update_user_info(request):
         return JsonResponse(context, safe=False)
 
     except Exception as error:
+        raise error
         info = {
             "Success": False,
             "error": "User Profile Update Failed",

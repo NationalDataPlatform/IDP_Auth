@@ -96,6 +96,7 @@ class UserRole(models.Model):
         CREATED = "created", _("created")
         APPROVED = "approved", _("approved")
         REJECTED = "rejected", _("rejected")
+        DISABLED = "disabled", _("disabled")
 
     username = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     org_id = models.CharField(max_length=100, null=True, blank=True)
