@@ -27,20 +27,15 @@ SECRET_KEY = "django-insecure-(7uy1jsg$=g@v^ti@_(=$f^wl3=3njmpz=&ox%yomfeup9)1pb
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False if os.environ.get('DEBUG', "False") == "False" else True
+whitelisted_urls = os.environ.get("URL_WHITELIST", '*').split(',')
+ALLOWED_HOSTS = whitelisted_urls + os.environ.get("URL_WHITELIST").replace("https://", "").replace("http://", "").split(",")
 
-ALLOWED_HOSTS = ["*"]
-
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_WHITELIST = ("http://localhost:3000",)
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ORIGIN_WHITELIST = whitelisted_urls
 
 CORS_ALLOW_HEADERS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://13.232.239.70:3000/",
-    "http://localhost:3000/",
-    "http://127.0.0.1:3000/",
-    "https://auth.idp.civicdatalab.in",
-]
+CSRF_TRUSTED_ORIGINS = whitelisted_urls
 
 
 # Application definition
