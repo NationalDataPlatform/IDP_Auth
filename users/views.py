@@ -70,6 +70,14 @@ def has_access(username, access_org_id, access_data_id, access_req):
     ispmu = False
     iscr = False
 
+    is_data_owner = False
+    if access_data_id:
+        datasetobj = DatasetOwner.objects.filter(
+            username__username=username, dataset_id=access_data_id
+        ).values("is_owner")
+        if len(datasetobj) != 0 and datasetobj[0]["is_owner"] == True:    
+            is_data_owner = True
+
     userroleobj = UserRole.objects.filter(
         username__username=username, org_id=access_org_id
     ).values("org_id", "role__role_name")
@@ -89,7 +97,7 @@ def has_access(username, access_org_id, access_data_id, access_req):
                 iscr = True
         if len(userroles) == 0:
             if access_req == "query":
-                context = {"Success": True, "access_allowed": True, "role": ""}
+                context = {"Success": True, "access_allowed": True, "role": "", "is_data_owner": is_data_owner}
                 return JsonResponse(context, safe=False)
             context = {
                 "Success": False,
@@ -114,11 +122,11 @@ def has_access(username, access_org_id, access_data_id, access_req):
     )
 
     if access_req == "query":
-        context = {"Success": True, "access_allowed": True, "role": userrole}
+        context = {"Success": True, "access_allowed": True, "role": userrole, "is_data_owner": is_data_owner}
         return JsonResponse(context, safe=False)
 
     if ispmu == True:
-        context = {"Success": True, "access_allowed": True, "role": "PMU"}
+        context = {"Success": True, "access_allowed": True, "role": "PMU", "is_data_owner": is_data_owner}
         return JsonResponse(context, safe=False)
 
     # request_dataset_mod
@@ -128,7 +136,7 @@ def has_access(username, access_org_id, access_data_id, access_req):
         and access_req
         not in ["approve_organization", "publish_dataset", "approve_license", "approve_policy"]
     ):
-        context = {"Success": True, "access_allowed": True, "role": "DPA"}
+        context = {"Success": True, "access_allowed": True, "role": "DPA", "is_data_owner": is_data_owner}
         return JsonResponse(context, safe=False)
 
     if (
@@ -137,7 +145,7 @@ def has_access(username, access_org_id, access_data_id, access_req):
         and (("create" in access_req) or (access_req in ["list_review_request"]))
         and access_req not in ["create_dam"]
     ):
-        context = {"Success": True, "access_allowed": True, "role": "DP"}
+        context = {"Success": True, "access_allowed": True, "role": "DP", "is_data_owner": is_data_owner}
         return JsonResponse(context, safe=False)
 
     if (
@@ -156,7 +164,7 @@ def has_access(username, access_org_id, access_data_id, access_req):
             username__username=username, dataset_id=access_data_id
         ).values("is_owner")
         if len(datasetobj) != 0 and datasetobj[0]["is_owner"] == True:
-            context = {"Success": True, "access_allowed": True, "role": "DP"}
+            context = {"Success": True, "access_allowed": True, "role": "DP", "is_data_owner": is_data_owner}
             return JsonResponse(context, safe=False)
 
     context = {"Success": True, "access_allowed": False}
