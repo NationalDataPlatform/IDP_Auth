@@ -1054,8 +1054,8 @@ def get_user_info(request):
         user = users[0]
         
         user_roles = UserRole.objects.filter(username__username=user["username"]).values("org_id", "org_title", "role__role_name", "org_status", "updated")
-        user_roles_res = {"DP": [], "DPA": [], "PMU": [], "CR": []}
-        
+        user_roles_res = {"DP": [], "DPA": [], "PMU": [], "CR": [], "SA": []}
+
         for role in user_roles:
             user_roles_res[role["role__role_name"]].append(
                 {
